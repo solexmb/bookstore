@@ -59,13 +59,13 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}
 
-  # unit_test:
-  #   name: Maven Unit Test
-  #   uns-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Simulate Unit Test
-  #       run: echo "Running Unit Test"
+  unit_test:
+    name: Maven Unit Test
+    uns-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Simulate Unit Test
+        run: echo "Running Unit Test"
 
   # sonarqube:
   #   if: github.event.inputs.sonarqube == 'true'
