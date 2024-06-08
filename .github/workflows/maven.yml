@@ -9,8 +9,8 @@
 name: InterSwitch Demo
 env:
   IMAGE_REGISTRY: docker.io
-  APP_NAME: 
-  IMAGE_REPO_NAME:
+  APP_NAME: bookstore-svc
+  IMAGE_REPO_NAME: solexb/bookstore-svc
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   IMAE_REGISTRY:
