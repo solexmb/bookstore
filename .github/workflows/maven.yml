@@ -29,6 +29,10 @@ on:
         description: 'Run Sonarqube Analysis'
         required: true
         default: 'false'
+      scan_dockerBaseImage:
+        description: 'Scan base image?'
+        required: true
+        default: 'false'
 
 jobs:
   build_jar:
