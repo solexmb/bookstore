@@ -59,142 +59,143 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}
 
-  # unit_test:
-  #   name: Maven Unit Test
-  #   uns-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Simulate Unit Test
-  #       run: echo "Running Unit Test"
+  unit_test:
+    name: Maven Unit Test
+    runs-on: ubuntu-latest
+    needs: [ build_jar ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Simulate Unit Test
+        run: echo "Running Unit Test"
 
-  # sonarqube:
-  #   if: github.event.inputs.sonarqube == 'true'
-  #   name: Sonarqube Static Analysis
-  #   uns-on: ubuntu-latest
-  #   needs: [ unit_test ]
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Simulate Static Analysis
-  #       run: echo "Run Statis Analysis"
+  sonarqube:
+    if: github.event.inputs.sonarqube == 'true'
+    name: Sonarqube Static Analysis
+    runs-on: ubuntu-latest
+    needs: [ unit_test ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Simulate Static Analysis
+        run: echo "Run Statis Analysis"
 
-  # scan_dockerBaseImage:
-  #   if: github.event.inputs.scan_dockerBaseImage == 'true'
-  #   name: Vulnerability Scan
-  #   uns-on: ubuntu-latest
-  #   needs: [ build_jar, unit_test ]
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: scan base image
-  #       run: echo "scanning base image"
+  scan_dockerBaseImage:
+    if: github.event.inputs.scan_dockerBaseImage == 'true'
+    name: Vulnerability Scan
+    runs-on: ubuntu-latest
+    needs: [ build_jar, unit_test ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: scan base image
+        run: echo "scanning base image"
 
-  # docker_build:
-  #   name: Build Container Image
-  #   runs-on: ubuntu-latest
-  #   needs: [ build_jar, unit_test ]
-  #   outputs:
-  #     image-tag: ${{ steps.compute_image_tag.outputs.image-tag }}
-  #   steps:
-  #     - ueses: actions/checkout@v4
-  #     - name: Download jar file from build_jar job
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: ${{ env.APP_NAME }}
-  #         path: targets/
-  #     - name: Create image tag
-  #       id: compute_image_tag
-  #       run: |
-  #         BRANCH=${GITHUB_REF#refs/heads/}
-  #         # get first 7 characters for short commit tag
-  #         SHORT_SHA=`echo $GITHUB_SHA | cut -c-7`
-  #         DATE_SHA="`date +%Y%m%d-%H%M`-${SHORT_SHA}"
-  #         echo "image-tag=${BRANCH}-${DATE_SHA}" >> $GITHUB_OUTPUT
-  #     - name: Build and push docker image 
-  #       run: |
-  #         IMAGE_TAG=${{ steps.compute_image_tag.outputs.image-tag }}
-  #         docker build -t ${{ env.APP_NAME }}:${{ env.IMAGE_TAG }} .
-  #         docker tag ${{ env.APP_NAME }}:${{ env.IMAGE_TAG }} ${{ env.IMAGE_REPO_NAME }}:${{ env.IMAGE_TAG }}
-  #         echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u DOCKERHUB_USERNAME --password-stdin ${{ env.IMAE_REGISTRY }}
-  #         docker push ${{ env.IMAGE_REPO_NAME }}:${{ env.IMAGE_TAG }}
+  docker_build:
+    name: Build Container Image
+    runs-on: ubuntu-latest
+    needs: [ build_jar, unit_test ]
+    outputs:
+      image-tag: ${{ steps.compute_image_tag.outputs.image-tag }}
+    steps:
+      - ueses: actions/checkout@v4
+      - name: Download jar file from build_jar job
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.APP_NAME }}
+          path: targets/
+      - name: Create image tag
+        id: compute_image_tag
+        run: |
+          BRANCH=${GITHUB_REF#refs/heads/}
+          # get first 7 characters for short commit tag
+          SHORT_SHA=`echo $GITHUB_SHA | cut -c-7`
+          DATE_SHA="`date +%Y%m%d-%H%M`-${SHORT_SHA}"
+          echo "image-tag=${BRANCH}-${DATE_SHA}" >> $GITHUB_OUTPUT
+      - name: Build and push docker image 
+        run: |
+          IMAGE_TAG=${{ steps.compute_image_tag.outputs.image-tag }}
+          docker build -t ${{ env.APP_NAME }}:${{ env.IMAGE_TAG }} .
+          docker tag ${{ env.APP_NAME }}:${{ env.IMAGE_TAG }} ${{ env.IMAGE_REPO_NAME }}:${{ env.IMAGE_TAG }}
+          echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u DOCKERHUB_USERNAME --password-stdin ${{ env.IMAE_REGISTRY }}
+          docker push ${{ env.IMAGE_REPO_NAME }}:${{ env.IMAGE_TAG }}
 
-  # update-manifest-develop:
-  #   name: Deploy to develop
-  #   runs-on: ubuntu-latest
-  #   needs: [ docker_build ]
-  #   steps:
-  #     - ueses: actions/checkout@v4
-  #     - name: Replace Image Tag
-  #       run: |
-  #         export "IMAGE_TAG=${{ needs.docker_build.outputs.image-tag }}"
-  #         echo $IMAGE_TAG
-  #         git pull
-  #         sed -i "s/\(image: [^:]*:\)[^ ]*/\1$IMAGE_TAG/g" k8s/develop/deploy.yaml
-  #         cat k8s/develop/deploy.yaml
-  #     - name: Commit changes
-  #       run: |
-  #         export "IMAGE_TAG=${{ needs.docker_build.outputs.image-tag }}"
-  #         echo $IMAGE_TAG
-  #         git config --global user.name "${GITHUB_ACTOR}"
-  #         git config --global user.email "${GITHUB_ACTOR}+${GITHUB_ACTOR}@users.noreply.github.com"
-  #         git add k8s/develop/deploy.yaml
-  #         git commit -m "new build tag $(echo $IMAGE_TAG)"
-  #     - name: Push changes
-  #       env: 
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       run: git push
+  update-manifest-develop:
+    name: Deploy to develop
+    runs-on: ubuntu-latest
+    needs: [ docker_build ]
+    steps:
+      - ueses: actions/checkout@v4
+      - name: Replace Image Tag
+        run: |
+          export "IMAGE_TAG=${{ needs.docker_build.outputs.image-tag }}"
+          echo $IMAGE_TAG
+          git pull
+          sed -i "s/\(image: [^:]*:\)[^ ]*/\1$IMAGE_TAG/g" k8s/develop/deploy.yaml
+          cat k8s/develop/deploy.yaml
+      - name: Commit changes
+        run: |
+          export "IMAGE_TAG=${{ needs.docker_build.outputs.image-tag }}"
+          echo $IMAGE_TAG
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}+${GITHUB_ACTOR}@users.noreply.github.com"
+          git add k8s/develop/deploy.yaml
+          git commit -m "new build tag $(echo $IMAGE_TAG)"
+      - name: Push changes
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: git push
 
-  # deploy-to-staging:
-  #   name: Deploy to staging
-  #   runs-on: ubuntu-latest
-  #   environment: staging
-  #   needs: [ docker_build ]
-  #   steps:
-  #     - ueses: actions/checkout@v4
-  #     - name: Replace Image Tag
-  #       run: |
-  #         export "IMAGE_TAG=${{ needs.docker_build.outputs.image-tag }}"
-  #         echo $IMAGE_TAG
-  #         git pull
-  #         sed -i "s/\(image: [^:]*:\)[^ ]*/\1$IMAGE_TAG/g" k8s/staging/deploy.yaml
-  #         cat k8s/staging/deploy.yaml
-  #     - name: Commit changes
-  #       run: |
-  #         export "IMAGE_TAG=${{ needs.docker_build.outputs.image-tag }}"
-  #         echo $IMAGE_TAG
-  #         git config --global user.name "${GITHUB_ACTOR}"
-  #         git config --global user.email "${GITHUB_ACTOR}+${GITHUB_ACTOR}@users.noreply.github.com"
-  #         git add k8s/staging/deploy.yaml
-  #         git commit -m "new build tag $(echo $IMAGE_TAG)"
-  #     - name: Push changes
-  #       env: 
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       run: git push
+  deploy-to-staging:
+    name: Deploy to staging
+    runs-on: ubuntu-latest
+    environment: staging
+    needs: [ docker_build ]
+    steps:
+      - ueses: actions/checkout@v4
+      - name: Replace Image Tag
+        run: |
+          export "IMAGE_TAG=${{ needs.docker_build.outputs.image-tag }}"
+          echo $IMAGE_TAG
+          git pull
+          sed -i "s/\(image: [^:]*:\)[^ ]*/\1$IMAGE_TAG/g" k8s/staging/deploy.yaml
+          cat k8s/staging/deploy.yaml
+      - name: Commit changes
+        run: |
+          export "IMAGE_TAG=${{ needs.docker_build.outputs.image-tag }}"
+          echo $IMAGE_TAG
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}+${GITHUB_ACTOR}@users.noreply.github.com"
+          git add k8s/staging/deploy.yaml
+          git commit -m "new build tag $(echo $IMAGE_TAG)"
+      - name: Push changes
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: git push
 
-  # deploy-to-prod:
-  #   name: Deploy to staging
-  #   runs-on: ubuntu-latest
-  #   environment: prod
-  #   needs: [ docker_build ]
-  #   steps:
-  #     - ueses: actions/checkout@v4
-  #     - name: Replace Image Tag
-  #       run: |
-  #         export "IMAGE_TAG=${{ needs.docker_build.outputs.image-tag }}"
-  #         echo $IMAGE_TAG
-  #         git pull
-  #         sed -i "s/\(image: [^:]*:\)[^ ]*/\1$IMAGE_TAG/g" k8s/prod/deploy.yaml
-  #         cat k8s/prod/deploy.yaml
-  #     - name: Commit changes
-  #       run: |
-  #         export "IMAGE_TAG=${{ needs.docker_build.outputs.image-tag }}"
-  #         echo $IMAGE_TAG
-  #         git config --global user.name "${GITHUB_ACTOR}"
-  #         git config --global user.email "${GITHUB_ACTOR}+${GITHUB_ACTOR}@users.noreply.github.com"
-  #         git add k8s/prod/deploy.yaml
-  #         git commit -m "new build tag $(echo $IMAGE_TAG)"
-  #     - name: Push changes
-  #       env: 
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       run: git push
+  deploy-to-prod:
+    name: Deploy to staging
+    runs-on: ubuntu-latest
+    environment: prod
+    needs: [ docker_build ]
+    steps:
+      - ueses: actions/checkout@v4
+      - name: Replace Image Tag
+        run: |
+          export "IMAGE_TAG=${{ needs.docker_build.outputs.image-tag }}"
+          echo $IMAGE_TAG
+          git pull
+          sed -i "s/\(image: [^:]*:\)[^ ]*/\1$IMAGE_TAG/g" k8s/prod/deploy.yaml
+          cat k8s/prod/deploy.yaml
+      - name: Commit changes
+        run: |
+          export "IMAGE_TAG=${{ needs.docker_build.outputs.image-tag }}"
+          echo $IMAGE_TAG
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}+${GITHUB_ACTOR}@users.noreply.github.com"
+          git add k8s/prod/deploy.yaml
+          git commit -m "new build tag $(echo $IMAGE_TAG)"
+      - name: Push changes
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: git push
 
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
