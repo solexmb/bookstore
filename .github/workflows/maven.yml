@@ -140,7 +140,7 @@ jobs:
       - name: Push changes
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        RUN: git push
+        run: git push
 
   deploy-to-staging:
     name: Deploy to staging
@@ -167,7 +167,7 @@ jobs:
       - name: Push changes
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        RUN: git push
+        run: git push
 
   deploy-to-prod:
     name: Deploy to staging
@@ -194,7 +194,7 @@ jobs:
       - name: Push changes
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        RUN: git push
+        run: git push
 
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
