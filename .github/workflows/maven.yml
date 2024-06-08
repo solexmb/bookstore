@@ -16,10 +16,10 @@ env:
   IMAE_REGISTRY:
 
 on:
-  push:
-    branches: [ "feature-1" ]
-    paths-ignore:
-      -  k8s/**
+  # push:
+  #   branches: [ "feature-1" ]
+  #   paths-ignore:
+  #     -  k8s/**
   pull_request:
     branches: [ "feature-1" ]
 
