@@ -29,7 +29,7 @@ metadata:
   labels: bookstore-svc
 spec:
   selector:
-    # app.kubernetes.io/name: bookstore-svc
+    app.kubernetes.io/name: bookstore-svc
     app: bookstore-svc
   ports:
     - protocol: TCP
