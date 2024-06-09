@@ -26,9 +26,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: bookstore-svc
+  labels: bookstore-svc
 spec:
   selector:
-    app.kubernetes.io/name: bookstore-svc
+    # app.kubernetes.io/name: bookstore-svc
+    app: bookstore-svc
   ports:
     - protocol: TCP
       port: 8080
