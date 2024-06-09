@@ -148,7 +148,7 @@ jobs:
     name: Deploy to staging
     runs-on: ubuntu-latest
     environment: staging
-    needs: [ docker_build ]
+    needs: [ docker_build, update-manifest-develop ]
     steps:
       - uses: actions/checkout@v4
       - name: Replace Image Tag
@@ -175,7 +175,7 @@ jobs:
     name: Deploy to prod
     runs-on: ubuntu-latest
     environment: prod
-    needs: [ docker_build ]
+    needs: [ docker_build, deploy-to-staging ]
     steps:
       - uses: actions/checkout@v4
       - name: Replace Image Tag
