@@ -172,7 +172,7 @@ jobs:
         run: git push
 
   deploy-to-prod:
-    name: Deploy to prod
+    name: Deploy to staging
     runs-on: ubuntu-latest
     environment: prod
     needs: [ docker_build ]
