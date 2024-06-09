@@ -80,9 +80,9 @@ jobs:
 
   scan_dockerBaseImage:
     if: github.event.inputs.scan_dockerBaseImage == 'true'
-    name: Vulnerability Scan
+    name: Scan base image
     runs-on: ubuntu-latest
-    needs: [ unit_test ]
+    needs: [ build_jar ]
     steps:
       - uses: actions/checkout@v4
       - name: scan base image
