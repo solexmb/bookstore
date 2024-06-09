@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-svc
+  labels:
+    app: bookstore-svc
+    demo: interswitch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bookstore-svc
+  template:
+    metadata:
+      labels:
+        app: bookstore-svc
+    spec:
+      containers:
+      - name: bookstore-svc
+        image: solexb/bookstore-svc:main-20240609-1251-3f2610b
+        ports:
+        - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookstore-svc
+  labels: 
+    app: bookstore-svc
+spec:
+  selector:
+    # app.kubernetes.io/name: bookstore-svc
+    app: bookstore-svc
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
