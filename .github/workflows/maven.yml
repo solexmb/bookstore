@@ -13,7 +13,7 @@ env:
   IMAGE_REPO_NAME: solexb/bookstore-svc
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-  IMAE_REGISTRY:
+  IMAEG_REGISTRY:
 
 on:
   # push:
@@ -116,7 +116,7 @@ jobs:
           docker tag ${{ env.APP_NAME }}:${IMAGE_TAG} ${{ env.IMAGE_REPO_NAME }}:${IMAGE_TAG}
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u $DOCKERHUB_USERNAME --password-stdin 
           docker images
-          docker push ${{ env.IMAGE_REPO_NAME }}:${{ env.IMAGE_TAG }}
+          docker push ${{ env.IMAGE_REPO_NAME }}:${IMAGE_TAG}
 
   # update-manifest-develop:
   #   name: Deploy to develop
