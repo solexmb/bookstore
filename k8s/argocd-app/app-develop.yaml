@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: git@github.com:solexmb/bookstore.git
-    targetRevision: HEAD
+    targetRevision: demo-01
     path: k8s/develop
   destination:
     server: https://kubernetes.default.svc
