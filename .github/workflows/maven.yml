@@ -112,7 +112,7 @@ jobs:
       - name: Build and push docker image 
         run: |
           IMAGE_TAG=${{ steps.compute_image_tag.outputs.image-tag }}
-          docker build -t ${{ env.APP_NAME }}:${{ env.IMAGE_TAG }} .
+          docker build -t ${{ env.APP_NAME }}:${IMAGE_TAG} .
           docker tag ${{ env.APP_NAME }}:${{ env.IMAGE_TAG }} ${{ env.IMAGE_REPO_NAME }}:${{ env.IMAGE_TAG }}
           echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u DOCKERHUB_USERNAME --password-stdin ${{ env.IMAE_REGISTRY }}
           docker push ${{ env.IMAGE_REPO_NAME }}:${{ env.IMAGE_TAG }}
