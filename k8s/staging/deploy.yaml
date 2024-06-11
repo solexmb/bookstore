@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: bookstore-svc
-        image: solexb/bookstore-svc:demo-01-20240609-1807-fb44f77
+        image: solexb/bookstore-svc:demo-01-20240611-1353-cb9c452
         ports:
         - containerPort: 8080
 
